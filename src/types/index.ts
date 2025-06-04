@@ -40,4 +40,21 @@ export interface ReportItem {
 export interface ReportResponse {
   title: string;
   report: ReportItem[];
+}
+
+// 프롬프트 관리 관련 타입
+export interface PromptTemplate {
+  id: string;
+  name: string;
+  description: string;
+  content: string;
+  type: 'outline' | 'report';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PromptUpdateRequest {
+  name?: string;
+  description?: string;
+  content?: string;
 } 
