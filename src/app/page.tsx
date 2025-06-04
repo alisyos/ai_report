@@ -15,12 +15,12 @@ export default function Home() {
   const [reportResult, setReportResult] = useState<ReportResponse>();
   const [isGeneratingOutline, setIsGeneratingOutline] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('outline');
 
   const handleOutlineSubmit = async (data: OutlineFormData) => {
     setIsGeneratingOutline(true);
-    setError(undefined);
+    setError(null);
     
     try {
       const response = await fetch('/api/generate-outline', {
@@ -32,7 +32,16 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ error: '서버 오류가 발생했습니다.' }));
+        
+        if (response.status === 504) {
+          throw new Error('목차 생성 시간이 초과되었습니다. 내용을 줄이거나 다시 시도해 주세요.');
+        } else if (response.status === 408) {
+          throw new Error('목차 생성 시간이 초과되었습니다. 내용을 줄이거나 다시 시도해 주세요.');
+        } else if (response.status === 429) {
+          throw new Error('API 사용량 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.');
+        }
+        
         throw new Error(errorData.error || '목차 생성에 실패했습니다.');
       }
 
@@ -52,7 +61,7 @@ export default function Home() {
     if (!outlineResult || !outlineData) return;
 
     setIsGeneratingReport(true);
-    setError(undefined);
+    setError(null);
     
     try {
       const reportData = {
@@ -71,7 +80,16 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ error: '서버 오류가 발생했습니다.' }));
+        
+        if (response.status === 504) {
+          throw new Error('보고서 생성 시간이 초과되었습니다. 내용을 줄이거나 다시 시도해 주세요.');
+        } else if (response.status === 408) {
+          throw new Error('보고서 생성 시간이 초과되었습니다. 내용을 줄이거나 다시 시도해 주세요.');
+        } else if (response.status === 429) {
+          throw new Error('API 사용량 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.');
+        }
+        
         throw new Error(errorData.error || '보고서 생성에 실패했습니다.');
       }
 
@@ -90,7 +108,7 @@ export default function Home() {
     setOutlineData(undefined);
     setOutlineResult(undefined);
     setReportResult(undefined);
-    setError(undefined);
+    setError(null);
     setActiveTab('outline');
   };
 
@@ -304,11 +322,17 @@ export default function Home() {
                           </h3>
                           <Button
                             onClick={handleGenerateReport}
-                            loading={isGeneratingReport}
-                            className="flex items-center"
+                            disabled={isGeneratingReport}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                           >
-                            <FileText className="w-4 h-4 mr-2" />
-                            보고서 생성
+                            {isGeneratingReport ? (
+                              <div className="flex items-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                보고서 생성 중... (최대 1분 소요)
+                              </div>
+                            ) : (
+                              '보고서 생성하기'
+                            )}
                           </Button>
                         </div>
                         

@@ -434,8 +434,16 @@ export const OutlineForm: React.FC<OutlineFormProps> = ({ onSubmit, isLoading })
               loading={isLoading}
               size="lg"
               disabled={!contentValue || contentValue.trim().length === 0}
+              className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium transition-colors"
             >
-              목차 생성하기
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  목차 생성 중... (최대 1분 소요)
+                </div>
+              ) : (
+                '목차 생성하기'
+              )}
             </Button>
           </div>
 
