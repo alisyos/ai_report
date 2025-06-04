@@ -144,12 +144,25 @@ export const AdminPanel: React.FC = () => {
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* 헤더 */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            프롬프트 관리자 패널
-          </h1>
-          <p className="text-lg text-gray-600">
-            AI 보고서 생성에 사용되는 시스템 프롬프트를 관리합니다
-          </p>
+          <div className="flex justify-between items-center mb-4">
+            <div></div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                프롬프트 관리자 패널
+              </h1>
+              <p className="text-lg text-gray-600">
+                AI 보고서 생성에 사용되는 시스템 프롬프트를 관리합니다
+              </p>
+            </div>
+            <div>
+              <a
+                href="/"
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                사용자 페이지
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* 메시지 */}
