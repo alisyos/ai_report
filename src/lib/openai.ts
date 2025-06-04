@@ -26,7 +26,7 @@ export async function generateOutline(data: OutlineFormData): Promise<OutlineRes
     console.log('OpenAI API 호출 시작 (목차):', new Date().toISOString());
     
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4.1",
       messages: [
         {
           role: "system",
@@ -92,7 +92,7 @@ export async function generateReport(data: ReportFormData): Promise<ReportRespon
     console.log('OpenAI API 호출 시작 (보고서):', new Date().toISOString());
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4.1",
       messages: [
         {
           role: "system",
