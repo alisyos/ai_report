@@ -222,17 +222,17 @@ export default function Home() {
         )}
 
         {/* 메인 컨텐츠 - 좌우 분할 */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* 좌측: 입력 폼 (1/3) */}
-          <div className="lg:col-span-1 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          {/* 좌측: 입력 폼 (2/5) */}
+          <div className="lg:col-span-2 space-y-6">
             <OutlineForm 
               onSubmit={handleOutlineSubmit} 
               isLoading={isGeneratingOutline}
             />
           </div>
 
-          {/* 우측: 결과 표시 (2/3) */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* 우측: 결과 표시 (3/5) */}
+          <div className="lg:col-span-3 space-y-6">
             {/* 탭 헤더 */}
             <Card>
               <CardHeader>

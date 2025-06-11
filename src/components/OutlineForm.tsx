@@ -12,13 +12,13 @@ import { OutlineFormData } from '@/types';
 const outlineSchema = z.object({
   purpose: z.string().min(1, '목적을 입력해 주세요.'),
   topic: z.string().min(1, '주제를 입력해 주세요.'),
-  audience: z.enum(['internal_team', 'executives', 'general_public'], {
+  audience: z.enum(['internal_team', 'executives', 'clients', 'general_public'], {
     required_error: '대상을 선택해 주세요.'
   }),
   content: z.string().min(1, '내용을 입력해 주세요.'),
   contentType: z.enum(['text', 'file']).default('text'),
-  tone: z.enum(['formal', 'friendly', 'professional'], {
-    required_error: '톤/스타일을 선택해 주세요.'
+  tone: z.enum(['formal', 'professional', 'analytical', 'explanatory'], {
+    required_error: '문장 스타일을 선택해 주세요.'
   })
 });
 
@@ -192,13 +192,15 @@ export const OutlineForm: React.FC<OutlineFormProps> = ({ onSubmit, isLoading })
   const audienceOptions = [
     { value: 'internal_team', label: '내부 팀' },
     { value: 'executives', label: '임원' },
+    { value: 'clients', label: '고객사' },
     { value: 'general_public', label: '일반 대중' }
   ];
 
   const toneOptions = [
-    { value: 'formal', label: '격식체' },
-    { value: 'friendly', label: '친근한' },
-    { value: 'professional', label: '전문적' }
+    { value: 'formal', label: '공식적인' },
+    { value: 'professional', label: '전문적인' },
+    { value: 'analytical', label: '분석적인' },
+    { value: 'explanatory', label: '설명중심' }
   ];
 
   return (
@@ -219,8 +221,8 @@ export const OutlineForm: React.FC<OutlineFormProps> = ({ onSubmit, isLoading })
             <textarea
               id="purpose"
               {...register('purpose')}
-              placeholder="보고서의 목적을 입력해 주세요."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={"보고서 작성 목적을 입력해주세요.\nex: 고객사 영업을 위해, 분기 실적 정리 및 전략 수립 참고용"}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm"
               rows={3}
             />
             {errors.purpose && (
@@ -233,12 +235,12 @@ export const OutlineForm: React.FC<OutlineFormProps> = ({ onSubmit, isLoading })
             <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-2">
               주제 <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
+            <textarea
               id="topic"
               {...register('topic')}
-              placeholder="보고서의 주제를 입력해 주세요."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder={"보고서의 주제를 입력해주세요.\nex: 2025년 1분기 주요 실적 요약, AI 실무 교육 프로그램 구성안"}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-sm"
+              rows={3}
             />
             {errors.topic && (
               <p className="mt-1 text-sm text-red-600">{errors.topic.message}</p>
@@ -268,10 +270,10 @@ export const OutlineForm: React.FC<OutlineFormProps> = ({ onSubmit, isLoading })
             )}
           </div>
 
-          {/* 톤/스타일 */}
+          {/* 문장 스타일 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              톤/스타일 <span className="text-red-500">*</span>
+              문장 스타일 <span className="text-red-500">*</span>
             </label>
             <div className="space-y-2">
               {toneOptions.map((option) => (

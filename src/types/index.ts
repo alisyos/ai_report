@@ -2,10 +2,10 @@
 export interface OutlineFormData {
   purpose: string;
   topic: string;
-  audience: 'internal_team' | 'executives' | 'general_public';
+  audience: 'internal_team' | 'executives' | 'clients' | 'general_public';
   content: string;
   contentType: 'text' | 'file';
-  tone: 'formal' | 'friendly' | 'professional';
+  tone: 'formal' | 'professional' | 'analytical' | 'explanatory';
 }
 
 export interface OutlineStructure {
@@ -21,9 +21,9 @@ export interface OutlineResponse {
 // 보고서 생성 관련 타입
 export interface ReportFormData {
   titleStructure: OutlineResponse;
-  audience: 'internal_team' | 'executives' | 'general_public';
+  audience: 'internal_team' | 'executives' | 'clients' | 'general_public';
   content: string;
-  tone: 'formal' | 'friendly' | 'professional';
+  tone: 'formal' | 'professional' | 'analytical' | 'explanatory';
 }
 
 export interface ReportSection {
