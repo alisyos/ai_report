@@ -5,6 +5,7 @@ import { FileText, BookOpen, Download, RefreshCw, CheckCircle, Clock, AlertCircl
 import { OutlineForm } from '@/components/OutlineForm';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
+import { LoadingModal } from '@/components/ui/LoadingModal';
 import { OutlineFormData, OutlineResponse, ReportResponse } from '@/types';
 
 type TabType = 'outline' | 'report';
@@ -182,6 +183,21 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* 로딩 모달 */}
+      <LoadingModal
+        isOpen={isGeneratingOutline}
+        type="outline"
+        title="목차 생성 중"
+        message="입력하신 정보를 바탕으로 체계적인 목차를 생성하고 있습니다."
+      />
+      
+      <LoadingModal
+        isOpen={isGeneratingReport}
+        type="report"
+        title="보고서 생성 중"
+        message="목차를 바탕으로 완성된 보고서를 작성하고 있습니다."
+      />
+
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* 헤더 */}
         <div className="text-center mb-8">
@@ -307,14 +323,7 @@ export default function Home() {
               <CardContent className="p-6">
                 {activeTab === 'outline' && (
                   <div className="space-y-4">
-                    {isGeneratingOutline ? (
-                      <div className="flex items-center justify-center py-12">
-                        <div className="text-center">
-                          <Clock className="w-8 h-8 text-blue-500 mx-auto mb-4 animate-spin" />
-                          <p className="text-gray-600">목차를 생성하고 있습니다...</p>
-                        </div>
-                      </div>
-                    ) : outlineResult ? (
+                    {outlineResult ? (
                       <div>
                         <div className="flex items-center justify-between mb-4">
                           <h3 className="text-lg font-semibold text-gray-900">
@@ -325,14 +334,7 @@ export default function Home() {
                             disabled={isGeneratingReport}
                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                           >
-                            {isGeneratingReport ? (
-                              <div className="flex items-center">
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                보고서 생성 중... (최대 1분 소요)
-                              </div>
-                            ) : (
-                              '보고서 생성하기'
-                            )}
+                            보고서 생성하기
                           </Button>
                         </div>
                         
@@ -368,14 +370,7 @@ export default function Home() {
 
                 {activeTab === 'report' && (
                   <div className="space-y-4">
-                    {isGeneratingReport ? (
-                      <div className="flex items-center justify-center py-12">
-                        <div className="text-center">
-                          <Clock className="w-8 h-8 text-blue-500 mx-auto mb-4 animate-spin" />
-                          <p className="text-gray-600">보고서를 생성하고 있습니다...</p>
-                        </div>
-                      </div>
-                    ) : reportResult ? (
+                    {reportResult ? (
                       <div className="max-w-none">
                         {/* 제목 */}
                         <div className="text-center mb-8">

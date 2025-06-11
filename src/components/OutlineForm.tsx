@@ -438,14 +438,7 @@ export const OutlineForm: React.FC<OutlineFormProps> = ({ onSubmit, isLoading })
               disabled={!contentValue || contentValue.trim().length === 0}
               className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium transition-colors"
             >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  목차 생성 중... (최대 1분 소요)
-                </div>
-              ) : (
-                '목차 생성하기'
-              )}
+              목차 생성하기
             </Button>
           </div>
 
@@ -455,7 +448,7 @@ export const OutlineForm: React.FC<OutlineFormProps> = ({ onSubmit, isLoading })
             <ul className="text-sm text-blue-700 space-y-1">
               <li>• 입력된 정보를 바탕으로 목차를 자동 생성합니다</li>
               <li>• 생성된 목차를 검토하고 승인하면 최종 보고서가 작성됩니다</li>
-              <li>• Executive Summary와 참고문헌이 자동으로 추가됩니다</li>
+              <li>• Executive Summary가 자동으로 추가됩니다</li>
               <li>• 각 단락은 250-500자로 구성되며 데이터가 없는 경우 TBD로 표시됩니다</li>
             </ul>
           </div>
