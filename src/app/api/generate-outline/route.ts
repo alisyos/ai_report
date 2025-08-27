@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateOutline } from '@/lib/openai';
+import { generateOutlineStream } from '@/lib/openai';
 import { OutlineFormData } from '@/types';
 
-// Vercel 타임아웃 설정 (최대 60초)
-export const maxDuration = 60;
+export const maxDuration = 300; // 5분으로 증가 (스트리밍용)
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,40 +16,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('목차 생성 시작:', new Date().toISOString());
+    console.log('목차 생성 스트리밍 시작:', new Date().toISOString());
+
+    // 스트리밍 응답 생성
+    const stream = new ReadableStream({
+      async start(controller) {
+        let accumulatedContent = '';
+        
+        try {
+          for await (const chunk of generateOutlineStream(data)) {
+            accumulatedContent += chunk;
+            
+            // 클라이언트에 청크 전송
+            controller.enqueue(
+              new TextEncoder().encode(`data: ${JSON.stringify({ chunk, accumulated: accumulatedContent })}\n\n`)
+            );
+          }
+          
+          // 스트림 종료 신호
+          controller.enqueue(
+            new TextEncoder().encode(`data: ${JSON.stringify({ done: true, final: accumulatedContent })}\n\n`)
+          );
+          
+          console.log('목차 생성 스트리밍 완료:', new Date().toISOString());
+          controller.close();
+          
+        } catch (error) {
+          console.error('목차 생성 스트리밍 오류:', error);
+          controller.enqueue(
+            new TextEncoder().encode(`data: ${JSON.stringify({ error: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.' })}\n\n`)
+          );
+          controller.close();
+        }
+      }
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
     
-    const result = await generateOutline(data);
-    
-    console.log('목차 생성 완료:', new Date().toISOString());
-    
-    return NextResponse.json(result);
   } catch (error) {
-    console.error('목차 생성 API 오류:', error);
-    
-    // OpenAI API 오류 처리
-    if (error instanceof Error) {
-      if (error.message.includes('timeout') || error.message.includes('시간')) {
-        return NextResponse.json(
-          { error: '목차 생성 시간이 초과되었습니다. 내용을 줄이거나 다시 시도해 주세요.' },
-          { status: 408 }
-        );
-      }
-      
-      if (error.message.includes('rate limit') || error.message.includes('quota')) {
-        return NextResponse.json(
-          { error: 'API 사용량 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.' },
-          { status: 429 }
-        );
-      }
-      
-      return NextResponse.json(
-        { error: `목차 생성 중 오류가 발생했습니다: ${error.message}` },
-        { status: 500 }
-      );
-    }
+    console.error('목차 생성 API 초기화 오류:', error);
     
     return NextResponse.json(
-      { error: '알 수 없는 오류가 발생했습니다.' },
+      { error: error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.' },
       { status: 500 }
     );
   }

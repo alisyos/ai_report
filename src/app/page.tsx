@@ -10,6 +10,57 @@ import { OutlineFormData, OutlineResponse, ReportResponse } from '@/types';
 
 type TabType = 'outline' | 'report';
 
+// 스트리밍 응답 처리 함수
+const handleStreamingResponse = async (
+  response: Response,
+  onComplete: (finalResult: string) => void
+): Promise<void> => {
+  const reader = response.body?.getReader();
+  const decoder = new TextDecoder();
+  let accumulatedContent = '';
+
+  if (!reader) {
+    throw new Error('스트리밍 응답을 읽을 수 없습니다.');
+  }
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) break;
+      
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+      
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            
+            if (data.error) {
+              throw new Error(data.error);
+            }
+            
+            if (data.done && data.final) {
+              onComplete(data.final);
+              return;
+            }
+            
+            if (data.accumulated) {
+              accumulatedContent = data.accumulated;
+            }
+          } catch (parseError) {
+            // JSON 파싱 오류는 무시하고 계속 진행
+            console.warn('스트리밍 데이터 파싱 오류:', parseError);
+          }
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+};
+
 export default function Home() {
   const [outlineData, setOutlineData] = useState<OutlineFormData>();
   const [outlineResult, setOutlineResult] = useState<OutlineResponse>();
@@ -34,22 +85,24 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: '서버 오류가 발생했습니다.' }));
-        
-        if (response.status === 504) {
-          throw new Error('목차 생성 시간이 초과되었습니다. 내용을 줄이거나 다시 시도해 주세요.');
-        } else if (response.status === 408) {
-          throw new Error('목차 생성 시간이 초과되었습니다. 내용을 줄이거나 다시 시도해 주세요.');
-        } else if (response.status === 429) {
-          throw new Error('API 사용량 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.');
-        }
-        
         throw new Error(errorData.error || '목차 생성에 실패했습니다.');
       }
 
-      const result = await response.json();
-      setOutlineData(data);
-      setOutlineResult(result);
-      setActiveTab('outline');
+      // 스트리밍 응답 처리
+      if (response.headers.get('content-type')?.includes('text/event-stream')) {
+        await handleStreamingResponse(response, (finalResult) => {
+          const parsed = JSON.parse(finalResult);
+          setOutlineData(data);
+          setOutlineResult(parsed);
+          setActiveTab('outline');
+        });
+      } else {
+        // 기존 JSON 응답 처리 (호환성)
+        const result = await response.json();
+        setOutlineData(data);
+        setOutlineResult(result);
+        setActiveTab('outline');
+      }
     } catch (error) {
       console.error('목차 생성 오류:', error);
       setError(error instanceof Error ? error.message : '목차 생성 중 오류가 발생했습니다.');
@@ -82,21 +135,22 @@ export default function Home() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: '서버 오류가 발생했습니다.' }));
-        
-        if (response.status === 504) {
-          throw new Error('보고서 생성 시간이 초과되었습니다. 내용을 줄이거나 다시 시도해 주세요.');
-        } else if (response.status === 408) {
-          throw new Error('보고서 생성 시간이 초과되었습니다. 내용을 줄이거나 다시 시도해 주세요.');
-        } else if (response.status === 429) {
-          throw new Error('API 사용량 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.');
-        }
-        
         throw new Error(errorData.error || '보고서 생성에 실패했습니다.');
       }
 
-      const result = await response.json();
-      setReportResult(result);
-      setActiveTab('report');
+      // 스트리밍 응답 처리
+      if (response.headers.get('content-type')?.includes('text/event-stream')) {
+        await handleStreamingResponse(response, (finalResult) => {
+          const parsed = JSON.parse(finalResult);
+          setReportResult(parsed);
+          setActiveTab('report');
+        });
+      } else {
+        // 기존 JSON 응답 처리 (호환성)
+        const result = await response.json();
+        setReportResult(result);
+        setActiveTab('report');
+      }
     } catch (error) {
       console.error('보고서 생성 오류:', error);
       setError(error instanceof Error ? error.message : '보고서 생성 중 오류가 발생했습니다.');

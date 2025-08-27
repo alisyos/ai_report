@@ -26,12 +26,11 @@ export const LoadingModal: React.FC<LoadingModalProps> = ({
       {/* 모달 컨텐츠 */}
       <div className="relative bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
         <div className="text-center">
-          {/* 아이콘과 스피너 */}
-          <div className="relative mb-6">
+          {/* 아이콘 */}
+          <div className="mb-6">
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
               <Icon className="w-8 h-8 text-blue-600" />
             </div>
-            <div className="absolute inset-0 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
           </div>
           
           {/* 제목 */}

@@ -167,4 +167,81 @@ export async function generateReport(data: ReportFormData): Promise<ReportRespon
     
     throw new Error('보고서 생성 중 알 수 없는 오류가 발생했습니다.');
   }
+}
+
+// 스트리밍을 위한 새로운 함수들
+export async function* generateOutlineStream(data: OutlineFormData) {
+  const promptTemplate = getPromptByType('outline');
+  const promptContent = promptTemplate?.content || `당신은 전문적인 보고서 목차 생성 전문가입니다. 주어진 정보를 바탕으로 구조화된 보고서 목차를 JSON 형식으로 제공해주세요.`;
+  
+  const prompt = promptContent
+    .replace('{{purpose}}', data.purpose)
+    .replace('{{topic}}', data.topic)
+    .replace('{{audience}}', data.audience)
+    .replace('{{content}}', data.content);
+
+  console.log('OpenAI 스트리밍 API 호출 시작 (목차):', new Date().toISOString());
+  
+  const stream = await openai.chat.completions.create({
+    model: "gpt-4.1",
+    messages: [
+      {
+        role: "system",
+        content: "당신은 전문적인 보고서 작성 도우미입니다. 주어진 정보를 바탕으로 체계적이고 논리적인 목차를 JSON 형식으로 생성해주세요."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    response_format: { type: "json_object" },
+    temperature: 0.7,
+    max_tokens: 2000,
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content;
+    if (content) {
+      yield content;
+    }
+  }
+}
+
+export async function* generateReportStream(data: ReportFormData) {
+  const promptTemplate = getPromptByType('report');
+  const promptContent = promptTemplate?.content || `당신은 전문적인 보고서 작성 전문가입니다. 주어진 목차 구조와 내용을 바탕으로 완전한 보고서를 JSON 형식으로 작성해주세요.`;
+  
+  const prompt = promptContent
+    .replace('{{titleStructure}}', JSON.stringify(data.titleStructure, null, 2))
+    .replace('{{audience}}', data.audience)
+    .replace('{{content}}', data.content)
+    .replace('{{style}}', data.tone);
+
+  console.log('OpenAI 스트리밍 API 호출 시작 (보고서):', new Date().toISOString());
+
+  const stream = await openai.chat.completions.create({
+    model: "gpt-4.1",
+    messages: [
+      {
+        role: "system",
+        content: "당신은 전문적인 보고서 작성자입니다. 주어진 목차와 정보를 바탕으로 완성도 높은 보고서를 JSON 형식으로 작성해주세요."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ],
+    response_format: { type: "json_object" },
+    temperature: 0.7,
+    max_tokens: 4000,
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    const content = chunk.choices[0]?.delta?.content;
+    if (content) {
+      yield content;
+    }
+  }
 } 
